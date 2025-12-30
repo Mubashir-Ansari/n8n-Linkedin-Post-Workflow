@@ -1,0 +1,247 @@
+{
+  "name": "AI-Powered LinkedIn Post Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "person": "gWjsNX_IUv",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "92abd2fe-0abb-49cb-b55b-78412331ce75",
+      "name": "LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        4320,
+        1392
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "NLChHQWjWYl13ol7",
+          "name": "LinkedIn account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "> **LinkedIn**  \n> Publishes the generated LinkedIn post, including the emoji generated text directly to the user's LinkedIn profile.\n",
+        "height": 288,
+        "width": 208
+      },
+      "id": "56bf4335-72ae-4972-8785-3b53210efdaf",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4288,
+        1248
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=I have textual linked post created below, I want you to add meaningful emojis where necessary for eye catching, it should not add irrelevant emojis, but the context of the sentence is important for you to understand, and should not add too many emojis. Keeping in mind only emojis which looks formal and not informal for linkedin post. Keepping in mind strickly that there will be maximum of two emojis in any paragraph, and it is not necessary to add an emoji to all paragraphs.\n{{ $json.Post }}\n\nand then return me the updated post i don't wand preamble.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        3840,
+        1392
+      ],
+      "id": "099dd956-476a-4331-8cba-da2e63e02ba2",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "gpt-oss:120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        3840,
+        1584
+      ],
+      "id": "e66fc393-3bb5-4e16-9e7c-4f5bfbcb9046",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "74opmyVzTlahbUo2",
+          "name": "Ollama account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {}
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "ADD_YOUR_GOOGLE_SHEET_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "LinkedIn Posts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dRmV65TEoyfMueq1Wh-bFl_Bz3NGxOuLDYvOgCczIyo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dRmV65TEoyfMueq1Wh-bFl_Bz3NGxOuLDYvOgCczIyo/edit#gid=0"
+        },
+        "event": "rowUpdate",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        1408
+      ],
+      "id": "c8c4fff6-9362-475b-9bc6-ea864387088b",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "9JQzCcAySy6wcsaM",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5c545fb3-ea70-44c1-986b-98fe58c25dbd",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3600,
+        1408
+      ],
+      "id": "33a14b2b-801a-4440-af42-ecae265c10a6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "### Trigger\nThe trigger is set to retrieve the LLM generated posts \nfrom google sheet on every row added or updated."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        1232
+      ],
+      "id": "5f0d2ced-4801-406e-b621-4d04ecaf3349",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Condition\nIt checks the status of the post is updated to approved from approval needed in order to post it to Linkedin.\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3536,
+        1232
+      ],
+      "id": "7ce1f515-a4f6-4188-9e9c-e8ed7c0a39c8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### LLM Aagent\nThe purpose if this LLM agent which used Ollama model to beautify the generated textual post using emojis, to look appealing for the Linkedin post.",
+        "height": 176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3952,
+        1504
+      ],
+      "id": "869360f7-d463-4992-ac7d-49098e03b982",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f0ee6ee6-db71-46ef-802c-08e630f9ada0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0423dc7d9bb8471fcbf6f780301ad6b11c6462968f6b96d15012764b6aa9cf34"
+  },
+  "id": "vrntwWKvHxTzjNZc",
+  "tags": []
+}
